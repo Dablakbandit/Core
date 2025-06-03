@@ -1,0 +1,5 @@
+MESSAGE:
+  TOKENS_BALANCE: '&b&lCore &r&e>> &f Dein Gutenhaben ist: <i> Token.'
+  NOT_ENOUGH_TOKENS: '&cDu hast nicht genug Token, um das zu machen.'
+  PURCHASED: '&aDu kaufst <n> &r&afür <i> Token.'
+  YOU_NOW_HAVE: '&aDu hast jetzt <i> Token.'
