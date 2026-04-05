@@ -1,6 +1,5 @@
 package me.dablakbandit.core.utils.anvil.impl;
 
-import me.dablakbandit.core.CoreLog;
 import me.dablakbandit.core.utils.NMSUtils;
 import me.dablakbandit.core.utils.PacketUtils;
 import org.bukkit.entity.Player;
@@ -16,7 +15,7 @@ import java.util.function.Consumer;
 
 import static me.dablakbandit.core.utils.NMSUtils.getConstructorSilent;
 
-public class DefaultAnvilUtil implements IAnvilUtil {
+public class HistoricAnvilUtil implements IAnvilUtil {
     public static Class<?> classEntity = NMSUtils.getClassSilent("net.minecraft.world.entity.Entity");
     public static Class<?> classEntityHuman = NMSUtils.getClassSilent("net.minecraft.world.entity.player.EntityHuman");
     public static Class<?> classEntityPlayer = NMSUtils.getClassSilent("net.minecraft.server.level.EntityPlayer");

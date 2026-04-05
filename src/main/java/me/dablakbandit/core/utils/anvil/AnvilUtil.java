@@ -1,8 +1,8 @@
 package me.dablakbandit.core.utils.anvil;
 
 import me.dablakbandit.core.CoreLog;
-import me.dablakbandit.core.utils.anvil.impl.DefaultAnvilUtil;
 import me.dablakbandit.core.utils.anvil.impl.IAnvilUtil;
+import me.dablakbandit.core.utils.anvil.impl.HistoricAnvilUtil;
 import me.dablakbandit.core.utils.anvil.impl._16AnvilUtil;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -18,20 +18,29 @@ public class AnvilUtil{
 			return anvilUtil;
 		}
 		try{
-			CoreLog.info("Attempting to load default AnvilUtil");
-			DefaultAnvilUtil.getObjectAnvil().getClass();
-			anvilUtil = new DefaultAnvilUtil();
-			CoreLog.info("Loaded default, enjoy :)");
+			CoreLog.info("Attempting to load old AnvilUtil");
+			HistoricAnvilUtil.getObjectAnvil().getClass();
+			anvilUtil = new HistoricAnvilUtil();
+			CoreLog.info("Loaded old, enjoy :)");
 			return anvilUtil;
 		}catch(Exception e){
 		}
 		try{
 			CoreLog.info("Attempting to load 1.16 AnvilUtil");
+			_16AnvilUtil.getConPacketPlayOutOpenWindow().getClass();
 			anvilUtil = new _16AnvilUtil();
 			CoreLog.info("Loaded 1.16, enjoy :)");
 			return anvilUtil;
 		}catch(Exception e){
 		}
+		try{
+			CoreLog.info("Attempting to load propper AnvilUtil");
+			anvilUtil = new me.dablakbandit.core.utils.anvil.impl.NewAnvilUtil();
+			CoreLog.info("Loaded propper, enjoy :)");
+			return anvilUtil;
+		}catch(Exception e){
+		}
+		CoreLog.error("Failed to load AnvilUtil, no compatible version found :(");
 		return null;
 	}
 

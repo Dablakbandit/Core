@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface CommandBase{
+public @interface CommandBase {
 	//@formatter:off
 	String[] value() default {
 		"This config file handles all commands for this plugin allowing all commands to be dynamically changed",
@@ -26,6 +26,7 @@ public @interface CommandBase{
 		"  Info: 						| Add typeahead's for this command",
 		"  - typeahead1",
 		"  - typeahead2",
+		"  Enabled: <true/false>		| Enable/disable this command",
 		"  Cooldown: <seconds>			| Not yet implemented",
 	};
 	//@formatter:on

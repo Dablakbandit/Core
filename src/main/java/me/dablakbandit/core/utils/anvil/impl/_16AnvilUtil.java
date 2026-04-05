@@ -43,7 +43,7 @@ public class _16AnvilUtil implements IAnvilUtil{
     private static Class<?>			classIChatBaseComponent		= getNMSClassSilent("IChatBaseComponent");
     private static Constructor<?>	conPacketPlayOutOpenWindow	= getConPacketPlayOutOpenWindow();
 
-    private static Constructor<?> getConPacketPlayOutOpenWindow(){
+    public static Constructor<?> getConPacketPlayOutOpenWindow(){
         try{
             return getConstructorWithException(classPacketPlayOutOpenWindow, int.class, classContainers, classIChatBaseComponent);
         }catch(Exception e){
@@ -55,8 +55,6 @@ public class _16AnvilUtil implements IAnvilUtil{
             try{
                 return getConstructorWithException(classPacketPlayOutOpenWindow, int.class, int.class, String.class, int.class, boolean.class);
             }catch(Exception e1){
-                e.printStackTrace();
-                e1.printStackTrace();
             }
         }
         return null;

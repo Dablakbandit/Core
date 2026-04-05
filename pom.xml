@@ -65,6 +65,12 @@
             <artifactId>spigot</artifactId>
             <version>${bukkit.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>minecraft-server</artifactId>
+            <version>26.1.1-R0.1-SNAPSHOT</version>
+        </dependency>
         <dependency>
             <groupId>com.mojang</groupId>
             <artifactId>authlib</artifactId>

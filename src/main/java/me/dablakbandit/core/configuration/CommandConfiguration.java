@@ -46,6 +46,7 @@ public class CommandConfiguration extends Configuration{
 		private String[]	aliases;
 		private String[]	info;
 		private int			cooldown;
+		private boolean		enabled;
 		
 		private String		field;
 		
@@ -67,6 +68,7 @@ public class CommandConfiguration extends Configuration{
 			this.permission = permission;
 			this.aliases = aliases;
 			this.info = info;
+			this.enabled = true; // Default to enabled
 		}
 		
 		public boolean get(FileConfiguration config, String field, String path){
@@ -99,6 +101,9 @@ public class CommandConfiguration extends Configuration{
 			if(config.isSet(path + ".Cooldown")){
 				cooldown = config.getInt(path + ".Cooldown");
 			}
+			if(config.isSet(path + ".Enabled")){
+				enabled = config.getBoolean(path + ".Enabled");
+			}
 			return save;
 		}
 		
@@ -128,6 +133,10 @@ public class CommandConfiguration extends Configuration{
 		
 		public int getCooldown(){
 			return cooldown;
+		}
+		
+		public boolean isEnabled(){
+			return enabled;
 		}
 
 	}
