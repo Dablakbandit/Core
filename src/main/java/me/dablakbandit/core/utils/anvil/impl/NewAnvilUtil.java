@@ -11,10 +11,14 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.InventoryView;
 
+import java.lang.reflect.Method;
 import java.util.function.Consumer;
 
 public class NewAnvilUtil implements IAnvilUtil {
+
+    private static Method getBukkitView;
 
     public void open(Player player, Consumer<Inventory> after) {
         open(player, "Enter", after);
@@ -35,6 +39,11 @@ public class NewAnvilUtil implements IAnvilUtil {
                                        return new CustomAnvilMenu(containerId, inventory, ContainerLevelAccess.create(nmsPlayer.level(), nmsPlayer.blockPosition()));
                                    }
                                });
+            if(getBukkitView==null){
+                getBukkitView = NMSUtils.getMethod(nmsPlayer.containerMenu.getClass(), "getBukkitView");
+            }
+
+            after.accept(((InventoryView) getBukkitView.invoke(nmsPlayer.containerMenu)).getTopInventory());
         } catch (Exception e) {
             e.printStackTrace();
         }
