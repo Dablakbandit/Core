@@ -19,9 +19,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           # 11 runs BuildTools for 1.16.4; 25 (listed last, so the default) builds 26.x and Core
@@ -30,7 +30,7 @@ jobs:
             25
 
       - name: Cache Maven repository
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.m2/repository
           key: m2-${{ env.SPIGOT_LEGACY }}-${{ env.SPIGOT_MODERN }}-${{ hashFiles('pom.xml') }}
@@ -51,7 +51,8 @@ jobs:
           if missing minecraft-server "$SPIGOT_MODERN"; then
             "$JAVA_HOME_25_X64/bin/java" -jar BuildTools.jar --rev "$SPIGOT_MODERN"
           fi
-          ls "$repo"/*/
+          find ~/.m2/repository/org/spigotmc -name "*.jar" | sed "s#^$HOME/.m2/repository/#::notice title=BuildTools installed::#"
+          find "$RUNNER_TEMP/buildtools" -maxdepth 3 -name "*.jar" -newer BuildTools.jar 2>/dev/null | sed "s#^#::notice title=BuildTools output::#" || true
 
       - name: Build Core
         run: |
@@ -66,7 +67,7 @@ jobs:
           sed -E "s#^\[ERROR\] $GITHUB_WORKSPACE/##; s#^([^:]+):\[([0-9]+),([0-9]+)\] (.*)#::error file=\1,line=\2,col=\3::\4#" || true
           grep -E '^\[ERROR\]' "$RUNNER_TEMP/build.log" | grep -vE '\.java:\[' | head -5 | sed -E 's#^\[ERROR\] ?#::error::#' || true
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: core-${{ github.sha }}
           path: target/core-*.jar
