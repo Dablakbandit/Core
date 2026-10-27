@@ -54,7 +54,17 @@ jobs:
           ls "$repo"/*/
 
       - name: Build Core
-        run: mvn -B -ntp package
+        run: |
+          set -o pipefail
+          mvn -B -ntp package 2>&1 | tee "$RUNNER_TEMP/build.log"
+
+      - name: Annotate compile errors
+        if: failure()
+        run: |
+          # "[ERROR] /abs/path/File.java:[line,col] message" -> inline annotations on the commit / PR
+          grep -E '^\[ERROR\] /.*\.java:\[[0-9]+,[0-9]+\]' "$RUNNER_TEMP/build.log" | sort -u | head -50 |
+          sed -E "s#^\[ERROR\] $GITHUB_WORKSPACE/##; s#^([^:]+):\[([0-9]+),([0-9]+)\] (.*)#::error file=\1,line=\2,col=\3::\4#" || true
+          grep -E '^\[ERROR\]' "$RUNNER_TEMP/build.log" | grep -vE '\.java:\[' | head -5 | sed -E 's#^\[ERROR\] ?#::error::#' || true
 
       - uses: actions/upload-artifact@v4
         with:
