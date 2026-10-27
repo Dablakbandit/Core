@@ -10,11 +10,6 @@ on:
 permissions:
   contents: write
 
-env:
-  # Spigot artifacts in pom.xml that only BuildTools can produce
-  SPIGOT_LEGACY: 1.16.4      # org.spigotmc:spigot / spigot-api
-  SPIGOT_MODERN: 26.1.1      # org.spigotmc:minecraft-server
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,6 +23,13 @@ jobs:
           java-version: |
             11
             25
+
+      - name: Read Spigot versions from pom.xml
+        # Spigot artifacts in pom.xml that only BuildTools can produce
+        run: |
+          prop() { sed -n "s#.*<$1>\(.*\)-R0.1-SNAPSHOT</$1>.*#\1#p" pom.xml; }
+          echo "SPIGOT_LEGACY=$(prop bukkit.version)" >> "$GITHUB_ENV"     # spigot / spigot-api
+          echo "SPIGOT_MODERN=$(prop minecraft.version)" >> "$GITHUB_ENV"  # minecraft-server
 
       - name: Cache Maven repository
         uses: actions/cache@v5
@@ -51,8 +53,11 @@ jobs:
           if missing minecraft-server "$SPIGOT_MODERN"; then
             "$JAVA_HOME_25_X64/bin/java" -jar BuildTools.jar --rev "$SPIGOT_MODERN"
           fi
-          find ~/.m2/repository/org/spigotmc -name "*.jar" | sed "s#^$HOME/.m2/repository/#::notice title=BuildTools installed::#"
-          find "$RUNNER_TEMP/buildtools" -maxdepth 3 -name "*.jar" -newer BuildTools.jar 2>/dev/null | sed "s#^#::notice title=BuildTools output::#" || true
+          if missing spigot "$SPIGOT_LEGACY" || missing minecraft-server "$SPIGOT_MODERN"; then
+            echo "::error::BuildTools did not install the Spigot versions in pom.xml. Installed:"
+            find "$repo" -name "*.jar" | sed "s#^$repo/#::error::#"
+            exit 1
+          fi
 
       - name: Build Core
         run: |
