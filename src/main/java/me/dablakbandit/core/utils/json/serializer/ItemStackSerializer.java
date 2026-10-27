@@ -19,8 +19,8 @@ import java.util.Base64;
 /**
  * Stores ItemStacks as base64 strings.
  *
- * Paper: {@code ItemStack#serializeAsBytes} (versioned NBT, upgraded by the server's DataFixer on load).
- * Spigot: Bukkit object serialization, as before.
+ * Paper and Spigot 26.x+: versioned item bytes ({@link ItemBytes}), upgraded by the server's DataFixer on load. Both
+ * write the same format, so data moves freely between them. Older servers: Bukkit object serialization, as before.
  *
  * Reading accepts both. Old Bukkit-serialized data is upgraded in place on load (see {@link LegacyItemStackReader})
  * and is rewritten in the byte format the next time the owner saves.

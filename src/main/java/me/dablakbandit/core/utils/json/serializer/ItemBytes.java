@@ -1,46 +1,59 @@
 package me.dablakbandit.core.utils.json.serializer;
 
+import me.dablakbandit.core.CoreLog;
 import org.bukkit.inventory.ItemStack;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
- * Paper's versioned item byte API ({@code ItemStack#serializeAsBytes} / {@code ItemStack.deserializeBytes}),
- * looked up by reflection because Core compiles against the Spigot API. Not present on Spigot.
+ * Versioned item bytes: gzip NBT with a root DataVersion, upgraded by the server's DataFixer when read back.
+ *
+ * Paper: its API, {@code ItemStack#serializeAsBytes} / {@code ItemStack.deserializeBytes} (by reflection, since Core
+ * compiles against the Spigot API). Spigot 26.x+: the same format through the vanilla codec
+ * ({@link me.dablakbandit.core.utils.json.serializer.impl.VanillaItemBytes}). Data is interchangeable between the two.
  */
 public final class ItemBytes{
 
-	private static final Method	SERIALIZE;
-	private static final Method	DESERIALIZE;
+	public interface Backend{
+		byte[] serialize(ItemStack item) throws Exception;
 
-	static{
-		Method serialize = null, deserialize = null;
+		ItemStack deserialize(byte[] bytes) throws Exception;
+	}
+
+	private static final Backend BACKEND = load();
+
+	private static Backend load(){
 		try{
-			serialize = ItemStack.class.getMethod("serializeAsBytes");
-			deserialize = ItemStack.class.getMethod("deserializeBytes", byte[].class);
-		}catch(NoSuchMethodException ignored){
-			serialize = null;
-			deserialize = null;
+			Backend paper = new PaperBackend();
+			CoreLog.info("ItemStack storage: Paper item byte API");
+			return paper;
+		}catch(Throwable ignored){
 		}
-		SERIALIZE = serialize;
-		DESERIALIZE = deserialize;
+		try{
+			Backend vanilla = new me.dablakbandit.core.utils.json.serializer.impl.VanillaItemBytes();
+			CoreLog.info("ItemStack storage: server item codec + DataFixer");
+			return vanilla;
+		}catch(Throwable ignored){
+		}
+		CoreLog.info("ItemStack storage: Bukkit object streams");
+		return null;
 	}
 
 	private ItemBytes(){
 	}
 
 	public static boolean isAvailable(){
-		return SERIALIZE != null;
+		return BACKEND != null;
 	}
 
-	/** Gzip NBT with a DataVersion, upgraded by the server's DataFixer when read back. Item must not be empty. */
+	/** Item must not be empty. */
 	public static byte[] serialize(ItemStack item) throws Exception{
-		return (byte[])invoke(SERIALIZE, item);
+		return backend().serialize(item);
 	}
 
 	public static ItemStack deserialize(byte[] bytes) throws Exception{
-		return (ItemStack)invoke(DESERIALIZE, null, (Object)bytes);
+		return backend().deserialize(bytes);
 	}
 
 	/** True for data written by {@link #serialize} (gzip magic); Bukkit object streams start with 0xACED. */
@@ -48,8 +61,30 @@ public final class ItemBytes{
 		return bytes.length > 2 && (bytes[0] & 0xFF) == 0x1F && (bytes[1] & 0xFF) == 0x8B;
 	}
 
+	private static Backend backend(){
+		if(BACKEND == null){ throw new UnsupportedOperationException("ItemStack byte serialization is not supported on this server"); }
+		return BACKEND;
+	}
+
+	private static final class PaperBackend implements Backend{
+		private final Method	serialize	= ItemStack.class.getMethod("serializeAsBytes");
+		private final Method	deserialize	= ItemStack.class.getMethod("deserializeBytes", byte[].class);
+
+		private PaperBackend() throws NoSuchMethodException{
+		}
+
+		@Override
+		public byte[] serialize(ItemStack item) throws Exception{
+			return (byte[])invoke(serialize, item);
+		}
+
+		@Override
+		public ItemStack deserialize(byte[] bytes) throws Exception{
+			return (ItemStack)invoke(deserialize, null, (Object)bytes);
+		}
+	}
+
 	private static Object invoke(Method method, Object target, Object... args) throws Exception{
-		if(method == null){ throw new UnsupportedOperationException("ItemStack byte serialization requires Paper"); }
 		try{
 			return method.invoke(target, args);
 		}catch(InvocationTargetException e){
